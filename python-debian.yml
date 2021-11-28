@@ -1,0 +1,5 @@
+- name: Install python in hosts
+- hosts: all
+  tasks:
+  - name: Install python
+    raw: apt -y install python
