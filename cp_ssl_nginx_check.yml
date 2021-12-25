@@ -1,0 +1,33 @@
+---
+- name : Копирование ssl сертификатов на сервера. Проверка синтаксиса nginx и перезапуск
+  hosts: debian
+
+  vars:
+    path: /etc/ssl/papka
+    src: /data/papka/2021/papka/
+    dest: /etc/ssl/papka/
+
+  tasks:
+    - name: Удаляем папку papka в директории /etc/ssl/
+      file: path={{ path }} state=absent
+
+    - name: Копируем с локального сервера сертификаты в папку /etc/ssl/papka/
+      copy: src={{ src }} dest={{ dest }}
+
+    - name: Проверяем конфиг nginx
+      shell: "/usr/sbin/nginx -t"
+      register: nginx_config_status
+
+    - name: Nginx вывод
+      debug:
+        msg: "{{ nginx_config_status }}"
+
+#    - name: NGINX статус
+#      debug:
+#        msg: "{{ nginx_config_status.rc }}"
+
+    - name: Рестартуем nginx если конфиг валидный
+      systemd:
+        name: nginx
+        state: restarted
+      when: nginx_config_status.rc == 0
